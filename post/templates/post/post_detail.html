@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+    {% block title %}detail{% endblock %}
+{% block content %}
+
+     {% if request.user.is_authenticated and request.user.id == post.user.id%}
+         <br> <a  href="{% url 'post:post_delete'  post.user.id post.id %}">
+     <button type="button" class="btn btn-danger">Delete post </button></a>
+         <a href="{% url 'post:edit_post'  post.user.id post.id %}"><button type="button" class="btn btn-warning"> Edit  post </button></a> <br>
+    {% endif %}
+     <h2 class="text-center bg-light">{{ post.user }}</h2>
+       <h4 class="text-center bg-light">{{ post.body }}</h4>
+    <p class="text-center">{{ post.created }}</p><hr>
+     {% with total=comments.count%}
+        <p>this post has  {{ total }} comment{{ total|pluralize }}</p>
+        {% endwith %}
+     {% if request.user.is_authenticated %}
+         <a href="{% url 'post:like' post.id %}" class="btn btn-primary {% if can_like %}disabled {% endif %} col-md-2">Like {{ post.likes_count }}</a><br><br>
+     {% endif %}
+     {% if request.user.is_authenticated %}
+         <form action="" method="post" novalidate>
+           {% csrf_token %}
+         {{ form.as_p }}
+         <input type="submit" value="send" class="btn btn-primary">
+         </form>
+     {% endif %}
+    {% for comment in comments %}
+        <p class="card-header">{{comment.user}}</p>
+        <p class="card-body">{{ comment.body }}</p>
+        {% if request.user.is_authenticated %}
+           <form action="{% url 'post:Add_reply' post.id  comment.id %}" method="post">
+             {%csrf_token %}
+            {{ reply_form.as_p }}
+           <input type="submit" value="send" class="btn btn-primary">
+          </form>
+        {% endif %}
+
+         {% for reply in comment.rcomment.all %}
+            <p class="bg-primary text-white" >{{ reply.user}}<br>{{ reply.body }}</p>
+        {% endfor %}
+    {% endfor %}
+
+{% endblock %}
